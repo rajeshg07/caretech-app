@@ -1,0 +1,1337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CareTech — Medicine Management & Dispenser</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#F0F4F9;--surface:#fff;--surface2:#F7F9FC;--border:#E2E8F2;
+  --teal:#0B7A75;--teal2:#0EA5A0;--teal-lt:#E0F5F4;--teal-mid:#B2E8E6;
+  --navy:#0D2137;--navy2:#1A3A5C;--sky:#2E7CF6;--sky-lt:#EBF2FF;
+  --amber:#D97706;--amber-lt:#FEF3C7;--red:#DC2626;--red-lt:#FEE2E2;
+  --green:#059669;--green-lt:#D1FAE5;--purple:#7C3AED;--purple-lt:#EDE9FE;
+  --rose:#E11D48;--rose-lt:#FFE4E6;
+  --gray1:#64748B;--gray2:#94A3B8;--gray3:#CBD5E1;
+  --text:#0D2137;--text2:#475569;
+  --font:'Plus Jakarta Sans',sans-serif;
+  --r-sm:8px;--r-md:12px;--r-lg:16px;--r-xl:22px;
+  --sh-sm:0 1px 3px rgba(13,33,55,.07),0 1px 2px rgba(13,33,55,.04);
+  --sh-md:0 4px 16px rgba(13,33,55,.09),0 1px 4px rgba(13,33,55,.05);
+  --sh-lg:0 20px 48px rgba(13,33,55,.13),0 4px 12px rgba(13,33,55,.06);
+}
+html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;overflow:hidden;}
+button{cursor:pointer;font-family:var(--font);}
+input,select,textarea{font-family:var(--font);}
+
+/* ── SHELL ── */
+#app{display:flex;height:100vh;overflow:hidden;}
+
+/* ── SIDEBAR ── */
+#sidebar{width:234px;flex-shrink:0;background:var(--navy);display:flex;flex-direction:column;z-index:50;}
+/* Family sidebar gets a warm rose tint on the header */
+#sidebar.family-mode .sb-logo{background:linear-gradient(135deg,rgba(225,29,72,.18),transparent);}
+#sidebar.family-mode .ni.active{background:linear-gradient(135deg,rgba(225,29,72,.28),rgba(225,29,72,.12));border-color:rgba(225,29,72,.3);}
+#sidebar.family-mode .ni.active .ni-ic{color:#fda4af;}
+.sb-logo{padding:22px 18px 16px;border-bottom:1px solid rgba(255,255,255,.07);transition:background .3s;}
+.sb-logo-row{display:flex;align-items:center;gap:10px;}
+.sb-ic{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--teal),var(--teal2));display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
+#sidebar.family-mode .sb-ic{background:linear-gradient(135deg,var(--rose),#fb7185);}
+.sb-name{font-size:.88rem;font-weight:800;color:#fff;line-height:1.2;}
+.sb-sub{font-size:.63rem;color:rgba(255,255,255,.35);margin-top:1px;}
+.family-badge{display:inline-flex;align-items:center;gap:4px;background:rgba(225,29,72,.2);border:1px solid rgba(225,29,72,.3);border-radius:50px;padding:2px 9px;font-size:.63rem;font-weight:700;color:#fda4af;margin-top:6px;letter-spacing:.04em;}
+.sb-nav{flex:1;padding:10px 8px;overflow-y:auto;}
+.sb-sec{font-size:.62rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.24);padding:0 10px;margin:12px 0 4px;}
+.ni{display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:var(--r-sm);color:rgba(255,255,255,.52);font-size:.83rem;font-weight:500;cursor:pointer;transition:all .15s;position:relative;margin-bottom:1px;border:none;background:none;width:100%;text-align:left;}
+.ni:hover{background:rgba(255,255,255,.07);color:rgba(255,255,255,.9);}
+.ni.active{background:linear-gradient(135deg,rgba(11,122,117,.32),rgba(14,165,160,.18));color:#fff;border:1px solid rgba(11,122,117,.38);}
+.ni.active .ni-ic{color:var(--teal2);}
+.ni-ic{font-size:1rem;flex-shrink:0;width:18px;text-align:center;}
+.ni-badge{margin-left:auto;background:var(--red);color:#fff;font-size:.62rem;font-weight:700;min-width:17px;height:17px;border-radius:50%;display:flex;align-items:center;justify-content:center;padding:0 4px;}
+.sb-user{padding:13px 15px;border-top:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:10px;cursor:pointer;}
+.sb-user:hover{background:rgba(255,255,255,.05);}
+.ua{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--sky),var(--teal));display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;color:#fff;flex-shrink:0;}
+.ua.family{background:linear-gradient(135deg,var(--rose),#fb7185);}
+.un{font-size:.8rem;font-weight:600;color:#fff;}
+.ur{font-size:.68rem;color:rgba(255,255,255,.38);}
+
+/* ── MAIN ── */
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;}
+#topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 22px;height:57px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;box-shadow:var(--sh-sm);}
+.tb-l{display:flex;align-items:center;gap:10px;}
+.pt{font-size:1rem;font-weight:700;color:var(--navy);}
+.ps{font-size:.75rem;color:var(--gray1);margin-top:1px;}
+.tb-r{display:flex;align-items:center;gap:7px;}
+.tbtn{background:none;border:1px solid var(--border);padding:7px 13px;border-radius:var(--r-sm);font-size:.79rem;font-weight:500;color:var(--text2);display:flex;align-items:center;gap:5px;transition:all .15s;}
+.tbtn:hover{border-color:var(--teal);color:var(--teal);}
+.tbtn.primary{background:linear-gradient(135deg,var(--teal),var(--teal2));color:#fff;border-color:transparent;box-shadow:0 2px 8px rgba(11,122,117,.3);}
+.tbtn.primary:hover{opacity:.9;}
+.tbtn.rose{background:linear-gradient(135deg,var(--rose),#fb7185);color:#fff;border-color:transparent;}
+.nb{position:relative;background:none;border:1px solid var(--border);width:33px;height:33px;border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;font-size:.9rem;color:var(--gray1);transition:all .15s;}
+.nb:hover{border-color:var(--amber);color:var(--amber);}
+.nd{position:absolute;top:5px;right:5px;width:6px;height:6px;border-radius:50%;background:var(--red);border:1.5px solid var(--surface);}
+#content{flex:1;overflow-y:auto;padding:20px;}
+.screen{display:none;}
+.screen.active{display:block;animation:fi .22s ease;}
+@keyframes fi{from{opacity:0;transform:translateY(5px);}to{opacity:1;transform:translateY(0);}}
+
+/* ── CARD ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px;box-shadow:var(--sh-sm);}
+.ch{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.ct{font-size:.9rem;font-weight:700;color:var(--navy);}
+.ca{font-size:.75rem;font-weight:600;color:var(--teal);cursor:pointer;background:none;border:none;}
+.ca:hover{text-decoration:underline;}
+
+/* ── FORMS ── */
+.fl{font-size:.75rem;font-weight:600;color:var(--text2);margin-bottom:5px;display:block;}
+.fi{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-size:.85rem;font-family:var(--font);color:var(--text);background:var(--surface2);outline:none;transition:border-color .15s;}
+.fi:focus{border-color:var(--teal);}
+.fsel{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-size:.85rem;font-family:var(--font);color:var(--text);background:var(--surface2);outline:none;appearance:none;}
+.fsel:focus{border-color:var(--teal);}
+.fg{margin-bottom:13px;}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+
+/* ── BADGES ── */
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:.69rem;font-weight:700;padding:3px 9px;border-radius:50px;white-space:nowrap;}
+.badge.done{background:var(--green-lt);color:var(--green);}
+.badge.missed{background:var(--red-lt);color:var(--red);}
+.badge.pending{background:var(--amber-lt);color:var(--amber);}
+.badge.upcoming{background:var(--sky-lt);color:var(--sky);}
+.badge.empty{background:var(--gray3);color:var(--gray1);}
+.badge.override{background:var(--purple-lt);color:var(--purple);}
+.badge.low{background:var(--amber-lt);color:var(--amber);}
+.badge.good{background:var(--green-lt);color:var(--green);}
+
+/* ── STATS ── */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin-bottom:18px;}
+.sc{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:17px;box-shadow:var(--sh-sm);}
+.si{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:.95rem;margin-bottom:11px;}
+.sc.teal .si{background:var(--teal-lt);color:var(--teal);}
+.sc.blue .si{background:var(--sky-lt);color:var(--sky);}
+.sc.amber .si{background:var(--amber-lt);color:var(--amber);}
+.sc.green .si{background:var(--green-lt);color:var(--green);}
+.sc.rose .si{background:var(--rose-lt);color:var(--rose);}
+.sv{font-size:1.65rem;font-weight:800;color:var(--navy);line-height:1;}
+.sl{font-size:.74rem;color:var(--gray1);margin-top:3px;}
+.sd{display:inline-flex;align-items:center;font-size:.68rem;font-weight:600;margin-top:5px;padding:2px 7px;border-radius:50px;}
+.sd.up{background:var(--green-lt);color:var(--green);}
+.sd.dn{background:var(--red-lt);color:var(--red);}
+
+/* ══════════════════════════════════════
+   FAMILY DASHBOARD — dedicated styles
+══════════════════════════════════════ */
+.family-hero{
+  background:linear-gradient(135deg,#0D2137,#1a1042);
+  border-radius:var(--r-xl);padding:28px 32px;
+  display:flex;align-items:center;gap:24px;
+  margin-bottom:20px;position:relative;overflow:hidden;
+  box-shadow:var(--sh-md);
+}
+.family-hero::before{content:'';position:absolute;top:-40px;right:-40px;width:200px;height:200px;background:radial-gradient(circle,rgba(225,29,72,.2),transparent 70%);}
+.fh-avatar{width:72px;height:72px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,var(--rose),#fb7185);display:flex;align-items:center;justify-content:center;font-size:1.6rem;font-weight:800;color:#fff;box-shadow:0 8px 24px rgba(225,29,72,.35);border:3px solid rgba(255,255,255,.15);}
+.fh-info{flex:1;min-width:0;}
+.fh-name{font-size:1.4rem;font-weight:800;color:#fff;line-height:1.2;}
+.fh-meta{font-size:.8rem;color:rgba(255,255,255,.55);margin-top:4px;}
+.fh-status{display:inline-flex;align-items:center;gap:6px;margin-top:12px;background:rgba(5,150,105,.2);border:1px solid rgba(5,150,105,.3);padding:5px 13px;border-radius:50px;font-size:.76rem;font-weight:600;color:#6ee7b7;}
+.fh-dot{width:7px;height:7px;border-radius:50%;background:#6ee7b7;animation:pulse-dot 2s infinite;}
+@keyframes pulse-dot{0%,100%{opacity:1;}50%{opacity:.3;}}
+.fh-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;flex-shrink:0;}
+.fh-stat{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:var(--r-md);padding:14px 16px;text-align:center;}
+.fh-stat-val{font-size:1.5rem;font-weight:800;color:#fff;}
+.fh-stat-lbl{font-size:.68rem;color:rgba(255,255,255,.45);margin-top:2px;}
+
+.fam-grid{display:grid;grid-template-columns:1.6fr 1fr;gap:16px;}
+
+.next-dose-card{
+  background:linear-gradient(135deg,var(--teal),var(--teal2));
+  border-radius:var(--r-xl);padding:22px 24px;color:#fff;
+  box-shadow:0 8px 24px rgba(11,122,117,.35);
+  position:relative;overflow:hidden;margin-bottom:14px;
+}
+.next-dose-card::before{content:'';position:absolute;top:-30px;right:-30px;width:120px;height:120px;background:rgba(255,255,255,.08);border-radius:50%;}
+.ndc-label{font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;opacity:.75;margin-bottom:8px;}
+.ndc-time{font-size:2.2rem;font-weight:800;line-height:1;}
+.ndc-med{font-size:1rem;font-weight:600;opacity:.9;margin-top:4px;}
+.ndc-slot{font-size:.76rem;opacity:.65;margin-top:2px;}
+.ndc-countdown{background:rgba(255,255,255,.15);border-radius:50px;padding:4px 12px;font-size:.76rem;font-weight:600;display:inline-block;margin-top:12px;}
+
+.today-timeline{display:flex;flex-direction:column;gap:8px;}
+.tl-item{display:flex;align-items:center;gap:12px;padding:11px 13px;border-radius:var(--r-md);border:1px solid var(--border);background:var(--surface2);transition:all .15s;}
+.tl-item:hover{border-color:var(--teal-mid);background:var(--teal-lt);}
+.tl-time{font-size:.72rem;font-weight:700;color:var(--navy);min-width:40px;text-align:center;padding:3px 5px;background:var(--bg);border-radius:5px;}
+.tl-info{flex:1;min-width:0;}
+.tl-med{font-size:.86rem;font-weight:600;color:var(--navy);}
+.tl-slot{font-size:.72rem;color:var(--gray1);}
+.tl-status{}
+
+.compliance-ring-wrap{display:flex;flex-direction:column;align-items:center;padding:20px;background:var(--surface2);border-radius:var(--r-lg);border:1px solid var(--border);}
+.compliance-ring-wrap .ct{margin-bottom:16px;align-self:flex-start;}
+.ring-svg{width:110px;height:110px;}
+.ring-val{font-size:1.5rem;font-weight:800;color:var(--navy);text-anchor:middle;dominant-baseline:central;}
+.ring-lbl{font-size:.62rem;fill:var(--gray1);text-anchor:middle;}
+
+.fam-hist-list{display:flex;flex-direction:column;gap:7px;}
+.fhi{display:flex;align-items:center;gap:11px;padding:10px 13px;border-radius:var(--r-md);border:1px solid var(--border);background:var(--surface2);}
+.fhi-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.fhi-time{font-size:.72rem;color:var(--gray1);min-width:80px;}
+.fhi-med{font-size:.82rem;font-weight:600;color:var(--navy);flex:1;}
+.fhi-slot{font-size:.7rem;color:var(--gray1);}
+
+.notif-list{display:flex;flex-direction:column;gap:8px;}
+.notif-item{display:flex;gap:11px;align-items:flex-start;padding:12px 14px;border-radius:var(--r-md);border-left:3px solid transparent;}
+.notif-item.ok{background:var(--green-lt);border-color:var(--green);}
+.notif-item.warn{background:var(--amber-lt);border-color:var(--amber);}
+.notif-item.missed{background:var(--red-lt);border-color:var(--red);}
+.notif-msg{font-size:.82rem;font-weight:600;color:var(--navy);}
+.notif-time{font-size:.7rem;color:var(--gray1);margin-top:1px;}
+
+/* family dispenser status */
+.disp-status-mini{background:linear-gradient(135deg,#0D2137,#112840);border-radius:var(--r-lg);padding:18px;color:#fff;}
+.dsm-title{font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:12px;}
+.dsm-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06);}
+.dsm-row:last-child{border-bottom:none;}
+.dsm-l{font-size:.78rem;color:rgba(255,255,255,.55);}
+.dsm-v{font-size:.78rem;font-weight:600;color:#fff;display:flex;align-items:center;gap:5px;}
+.dot-on{width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0;}
+
+/* ── STAFF DASHBOARD ── */
+.dg{display:grid;grid-template-columns:1.9fr 1fr;gap:14px;}
+.dose-list{display:flex;flex-direction:column;gap:7px;}
+.di{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:var(--r-md);border:1px solid var(--border);background:var(--surface2);transition:all .15s;}
+.di:hover{border-color:var(--teal-mid);background:var(--teal-lt);}
+.di-time{font-size:.7rem;font-weight:700;color:var(--navy);min-width:38px;text-align:center;padding:2px 4px;background:var(--bg);border-radius:5px;}
+.di-info{flex:1;min-width:0;}
+.di-name{font-size:.84rem;font-weight:600;color:var(--navy);}
+.di-med{font-size:.72rem;color:var(--gray1);}
+.di-slot{font-size:.68rem;font-weight:600;color:var(--teal);background:var(--teal-lt);padding:2px 6px;border-radius:4px;flex-shrink:0;}
+.al-list{display:flex;flex-direction:column;gap:7px;}
+.al-item{display:flex;gap:9px;align-items:flex-start;padding:10px 11px;border-radius:var(--r-md);border-left:3px solid transparent;}
+.al-item.crit{background:var(--red-lt);border-color:var(--red);}
+.al-item.warn{background:var(--amber-lt);border-color:var(--amber);}
+.al-item.info{background:var(--sky-lt);border-color:var(--sky);}
+.al-msg{font-size:.79rem;font-weight:600;color:var(--navy);}
+.al-time{font-size:.69rem;color:var(--gray1);margin-top:1px;}
+.dv-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);}
+.dv-row:last-child{border-bottom:none;}
+.dv-l{font-size:.78rem;color:var(--text2);}
+.dv-v{font-size:.78rem;font-weight:600;color:var(--navy);display:flex;align-items:center;gap:5px;}
+.dot-sm{width:6px;height:6px;border-radius:50%;}
+.dot-sm.on{background:var(--green);}
+
+/* ── SLOT CONFIG ── */
+.slot-layout{display:grid;grid-template-columns:1fr 330px;gap:16px;}
+.dispenser-visual{background:linear-gradient(145deg,#0D2137,#0A2E44);border-radius:var(--r-xl);padding:24px;display:flex;flex-direction:column;align-items:center;border:1px solid rgba(255,255,255,.08);}
+.dv-title{font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:16px;}
+.disp-body{background:linear-gradient(180deg,#1a3a5c,#112840);border-radius:16px;border:2px solid rgba(255,255,255,.1);padding:14px;width:100%;max-width:300px;box-shadow:0 20px 60px rgba(0,0,0,.5);}
+.slot-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+.sv{border-radius:11px;padding:13px 11px;cursor:pointer;border:2px solid rgba(255,255,255,.07);transition:all .2s;position:relative;background:rgba(255,255,255,.03);}
+.sv:hover{border-color:rgba(14,165,160,.45);}
+.sv.filled{border-color:rgba(14,165,160,.35);background:rgba(14,165,160,.08);}
+.sv.selected{border-color:var(--teal2);background:rgba(14,165,160,.16);box-shadow:0 0 0 3px rgba(14,165,160,.18);}
+.sv.low-stock{border-color:rgba(217,119,6,.45);background:rgba(217,119,6,.07);}
+.sv.empty-sv{border-color:rgba(255,255,255,.05);}
+.sv-num{font-size:.6rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:5px;}
+.sv-name{font-size:.8rem;font-weight:700;color:#fff;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sv-dose{font-size:.67rem;color:rgba(255,255,255,.48);margin-bottom:7px;}
+.sv-pills{display:flex;gap:3px;flex-wrap:wrap;margin-bottom:5px;}
+.pd{width:7px;height:7px;border-radius:50%;}
+.pd.full{} .pd.empty{background:rgba(255,255,255,.13);}
+.sv-count{font-size:.63rem;color:rgba(255,255,255,.38);}
+.sv-empty-msg{font-size:.73rem;color:rgba(255,255,255,.22);text-align:center;padding:7px 0;}
+.sv-badge{position:absolute;top:7px;right:7px;}
+.slot-btn{display:flex;align-items:center;gap:11px;padding:11px 13px;border-radius:var(--r-md);border:1.5px solid var(--border);background:var(--surface);cursor:pointer;transition:all .15s;text-align:left;width:100%;margin-bottom:7px;}
+.slot-btn:hover{border-color:var(--teal-mid);}
+.slot-btn.active{border-color:var(--teal);background:var(--teal-lt);}
+.slot-btn-num{width:30px;height:30px;border-radius:7px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:800;}
+.slot-btn.active .slot-btn-num{background:var(--teal);color:#fff;}
+.slot-btn:not(.active) .slot-btn-num{background:var(--bg);color:var(--navy);}
+.slot-btn-info{flex:1;min-width:0;}
+.slot-btn-name{font-size:.83rem;font-weight:600;color:var(--navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.slot-btn-sub{font-size:.7rem;color:var(--gray1);}
+.slot-edit-header{background:linear-gradient(135deg,var(--navy),var(--navy2));border-radius:var(--r-md);padding:14px;display:flex;align-items:center;gap:13px;margin-bottom:14px;}
+.slot-num-big{width:44px;height:44px;border-radius:11px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:800;color:#fff;}
+.slot-edit-title{font-size:.95rem;font-weight:700;color:#fff;}
+.slot-edit-sub{font-size:.72rem;color:rgba(255,255,255,.46);margin-top:2px;}
+.pill-count-row{display:flex;align-items:center;gap:8px;}
+.cb{width:28px;height:28px;border-radius:6px;border:1.5px solid var(--border);background:var(--surface);font-size:.95rem;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.cb:hover{border-color:var(--teal);color:var(--teal);}
+.cv{font-size:1.05rem;font-weight:700;color:var(--navy);min-width:34px;text-align:center;}
+.colour-row{display:flex;gap:6px;flex-wrap:wrap;}
+.co{width:22px;height:22px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:all .15s;flex-shrink:0;}
+.co:hover{transform:scale(1.15);}
+.co.sel{border-color:var(--navy);box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--navy);}
+.btn-save-slot{padding:10px;width:100%;background:linear-gradient(135deg,var(--teal),var(--teal2));color:#fff;border:none;border-radius:var(--r-sm);font-size:.86rem;font-weight:700;transition:all .2s;margin-top:4px;}
+.btn-save-slot:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(11,122,117,.38);}
+.btn-clear-slot{padding:8px;width:100%;background:none;color:var(--red);border:1.5px solid var(--red-lt);border-radius:var(--r-sm);font-size:.8rem;font-weight:600;transition:all .15s;margin-top:4px;}
+.btn-clear-slot:hover{background:var(--red-lt);}
+
+/* ── SCHEDULE ── */
+.sched-layout{display:grid;grid-template-columns:1fr 330px;gap:16px;}
+.wk-hdr{display:grid;grid-template-columns:66px repeat(7,1fr);gap:2px;margin-bottom:2px;}
+.wkl{text-align:center;font-size:.68rem;font-weight:600;color:var(--gray1);padding:4px;}
+.tr-row{display:grid;grid-template-columns:66px repeat(7,1fr);gap:2px;margin-bottom:2px;min-height:48px;}
+.tl-cell{font-size:.68rem;font-weight:500;color:var(--gray2);display:flex;align-items:center;justify-content:flex-end;padding-right:9px;}
+.tc{border:1px solid var(--border);border-radius:5px;background:var(--surface2);position:relative;min-height:48px;transition:background .15s;}
+.tc:hover{background:var(--teal-lt);border-color:var(--teal-mid);}
+.se{position:absolute;inset:2px;border-radius:3px;padding:3px 5px;font-size:.65rem;font-weight:600;overflow:hidden;cursor:pointer;}
+.se.c1{background:linear-gradient(135deg,#0B7A75,#0EA5A0);color:#fff;}
+.se.c2{background:linear-gradient(135deg,#2E7CF6,#60A5FA);color:#fff;}
+.se.c3{background:linear-gradient(135deg,#D97706,#FBBF24);color:#fff;}
+.se.c4{background:linear-gradient(135deg,#7C3AED,#A78BFA);color:#fff;}
+.se.c5{background:linear-gradient(135deg,#DC2626,#F87171);color:#fff;}
+.se.c6{background:linear-gradient(135deg,#059669,#34D399);color:#fff;}
+.se-n{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.se-m{opacity:.85;font-weight:400;font-size:.6rem;}
+.se-s{opacity:.7;font-size:.58rem;}
+.add-sched-form{display:flex;flex-direction:column;gap:11px;}
+.slot-ref-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border-radius:5px;font-size:.7rem;font-weight:600;background:var(--teal-lt);color:var(--teal);border:1px solid var(--teal-mid);margin-top:3px;cursor:pointer;width:fit-content;}
+.upcoming-list{display:flex;flex-direction:column;gap:6px;}
+.ui{display:flex;gap:8px;align-items:center;padding:9px 10px;border-radius:var(--r-sm);background:var(--surface2);border:1px solid var(--border);}
+.uit{font-size:.68rem;font-weight:700;padding:2px 5px;background:var(--teal-lt);border-radius:4px;color:var(--teal);min-width:38px;text-align:center;}
+.uii{flex:1;min-width:0;}
+.uin{font-size:.8rem;font-weight:600;color:var(--navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.uim{font-size:.69rem;color:var(--gray1);}
+.uis{font-size:.67rem;color:var(--gray2);font-weight:600;}
+
+/* ── RESIDENTS ── */
+.res-toolbar{display:flex;align-items:center;gap:7px;margin-bottom:16px;}
+.sw{position:relative;flex:1;}
+.sw-ic{position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:.82rem;color:var(--gray2);}
+.sb-inp{width:100%;padding:8px 11px 8px 30px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-size:.83rem;font-family:var(--font);background:var(--surface);outline:none;transition:border-color .15s;}
+.sb-inp:focus{border-color:var(--teal);}
+.fb{padding:7px 13px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-size:.77rem;font-weight:500;color:var(--text2);background:var(--surface);display:flex;align-items:center;gap:5px;transition:all .15s;}
+.fb:hover{border-color:var(--teal);color:var(--teal);}
+.res-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;}
+.rc{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:17px;cursor:pointer;transition:all .2s;box-shadow:var(--sh-sm);}
+.rc:hover{transform:translateY(-3px);box-shadow:var(--sh-md);border-color:var(--teal-mid);}
+.rc-hdr{display:flex;align-items:center;gap:11px;margin-bottom:11px;}
+.rav{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.95rem;font-weight:700;color:#fff;flex-shrink:0;}
+.rn{font-size:.88rem;font-weight:700;color:var(--navy);}
+.rid{font-size:.68rem;color:var(--gray1);}
+.med-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:11px;}
+.mt{font-size:.67rem;font-weight:500;padding:2px 7px;border-radius:50px;background:var(--teal-lt);color:var(--teal);border:1px solid var(--teal-mid);}
+.rc-ft{display:flex;align-items:center;justify-content:space-between;}
+.cbar{height:3px;background:var(--border);border-radius:2px;margin-top:7px;overflow:hidden;}
+.cf{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--teal),var(--teal2));}
+
+/* ── HISTORY ── */
+.exp-bar{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-md);margin-bottom:13px;}
+.fchips{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;align-items:center;}
+.fc{padding:5px 12px;border:1.5px solid var(--border);border-radius:50px;font-size:.74rem;font-weight:500;color:var(--text2);background:var(--surface);cursor:pointer;transition:all .15s;}
+.fc:hover{border-color:var(--teal);color:var(--teal);}
+.fc.active{background:var(--teal);border-color:var(--teal);color:#fff;font-weight:600;}
+.lt{width:100%;border-collapse:collapse;}
+.lt thead th{padding:9px 11px;text-align:left;font-size:.68rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--gray1);border-bottom:2px solid var(--border);background:var(--surface2);}
+.lt tbody tr{border-bottom:1px solid var(--border);transition:background .1s;}
+.lt tbody tr:hover{background:var(--surface2);}
+.lt td{padding:10px 11px;font-size:.82rem;color:var(--text2);}
+.lt td:first-child{color:var(--navy);font-weight:500;}
+.slot-tag{display:inline-flex;align-items:center;gap:5px;font-size:.7rem;font-weight:600;padding:2px 8px;border-radius:5px;background:var(--bg);border:1px solid var(--border);}
+.slot-dot{width:7px;height:7px;border-radius:50%;}
+
+/* ── ALERTS ── */
+.at{display:flex;gap:0;margin-bottom:16px;border-bottom:2px solid var(--border);}
+.atb{padding:8px 16px;border:none;background:none;font-size:.82rem;font-weight:600;color:var(--gray1);cursor:pointer;position:relative;transition:color .15s;}
+.atb.active{color:var(--teal);}
+.atb.active::after{content:'';position:absolute;bottom:-2px;left:0;right:0;height:2px;background:var(--teal);border-radius:2px;}
+.atb .cnt{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;font-size:.61rem;font-weight:700;margin-left:5px;}
+.atb.active .cnt{background:var(--teal);color:#fff;}
+.atb:not(.active) .cnt{background:var(--border);color:var(--gray1);}
+.alert-cards{display:flex;flex-direction:column;gap:8px;}
+.ac{display:flex;gap:11px;align-items:flex-start;padding:14px 15px;border-radius:var(--r-lg);border:1px solid var(--border);background:var(--surface);transition:all .15s;box-shadow:var(--sh-sm);}
+.ac:hover{box-shadow:var(--sh-md);}
+.ac.unread.crit{border-left:3px solid var(--red);}
+.ac.unread.warn{border-left:3px solid var(--amber);}
+.ac.unread.info{border-left:3px solid var(--sky);}
+.ac-icon{width:36px;height:36px;border-radius:9px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.95rem;}
+.ac.crit .ac-icon{background:var(--red-lt);}
+.ac.warn .ac-icon{background:var(--amber-lt);}
+.ac.info .ac-icon{background:var(--sky-lt);}
+.ac-body{flex:1;}
+.ac-title{font-size:.86rem;font-weight:700;color:var(--navy);}
+.ac-desc{font-size:.79rem;color:var(--text2);margin-top:2px;line-height:1.5;}
+.ac-meta{font-size:.69rem;color:var(--gray2);margin-top:4px;}
+.ac-acts{display:flex;gap:5px;margin-top:8px;}
+.bsm{padding:4px 10px;border-radius:5px;font-size:.71rem;font-weight:600;border:1.5px solid var(--border);background:none;color:var(--text2);transition:all .15s;}
+.bsm:hover{border-color:var(--teal);color:var(--teal);}
+.bsm.p{background:var(--teal);border-color:var(--teal);color:#fff;}
+.bsm.d{background:var(--red-lt);border-color:var(--red);color:var(--red);}
+.ac-x{color:var(--gray3);cursor:pointer;font-size:1rem;flex-shrink:0;background:none;border:none;transition:color .15s;}
+.ac-x:hover{color:var(--text);}
+
+/* ── SETTINGS ── */
+.set-layout{display:grid;grid-template-columns:195px 1fr;gap:16px;}
+.set-nav{display:flex;flex-direction:column;gap:3px;}
+.sni{padding:8px 11px;border-radius:var(--r-sm);font-size:.81rem;font-weight:500;color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:8px;border:none;background:none;text-align:left;transition:all .15s;width:100%;}
+.sni:hover{background:var(--surface2);color:var(--navy);}
+.sni.active{background:var(--teal-lt);color:var(--teal);font-weight:600;}
+.ss{display:none;}.ss.active{display:block;}
+.sg-title{font-size:.7rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--gray1);margin-bottom:9px;}
+.sr{display:flex;align-items:center;justify-content:space-between;padding:11px 13px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-md);margin-bottom:5px;}
+.sn{font-size:.83rem;font-weight:600;color:var(--navy);}
+.sd2{font-size:.71rem;color:var(--gray1);margin-top:1px;}
+.toggle{position:relative;display:inline-block;width:36px;height:19px;flex-shrink:0;}
+.toggle input{opacity:0;width:0;height:0;}
+.ts2{position:absolute;inset:0;border-radius:19px;background:var(--border);cursor:pointer;transition:background .2s;}
+.ts2::before{content:'';position:absolute;width:13px;height:13px;left:3px;bottom:3px;border-radius:50%;background:#fff;transition:transform .2s;}
+.toggle input:checked+.ts2{background:var(--teal);}
+.toggle input:checked+.ts2::before{transform:translateX(17px);}
+
+/* ── LOGIN ── */
+#login-screen{position:fixed;inset:0;background:linear-gradient(135deg,#0D2137 0%,#0B2E44 50%,#0A3D3B 100%);display:flex;align-items:center;justify-content:center;z-index:200;padding:20px;}
+.login-bg{position:absolute;inset:0;background-image:radial-gradient(circle at 20% 30%,rgba(11,122,117,.15) 0%,transparent 50%),radial-gradient(circle at 80% 70%,rgba(46,124,246,.1) 0%,transparent 50%);pointer-events:none;}
+.login-wrap{display:flex;gap:20px;align-items:flex-start;position:relative;z-index:1;width:100%;max-width:860px;}
+
+/* Main login card */
+.lc{background:rgba(255,255,255,.97);border-radius:20px;padding:36px 32px;width:380px;flex-shrink:0;box-shadow:0 40px 100px rgba(0,0,0,.35);}
+.ll{text-align:center;margin-bottom:24px;}
+.ll-ic{width:52px;height:52px;border-radius:13px;background:linear-gradient(135deg,var(--teal),var(--teal2));display:flex;align-items:center;justify-content:center;font-size:1.4rem;margin:0 auto 10px;box-shadow:0 8px 22px rgba(11,122,117,.35);}
+.lb{font-size:1.2rem;font-weight:800;color:var(--navy);}
+.lb span{color:var(--teal);}
+.lt2{font-size:.78rem;color:var(--gray1);margin-top:2px;}
+.role-sel{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;}
+.ro{padding:9px 4px;border:1.5px solid var(--border);border-radius:var(--r-sm);text-align:center;cursor:pointer;transition:all .15s;background:var(--surface2);}
+.ro:hover{border-color:var(--teal);}
+.ro.sel{border-color:var(--teal);background:var(--teal-lt);}
+.ro.sel-rose{border-color:var(--rose);background:var(--rose-lt);}
+.ro .re{font-size:1.15rem;display:block;margin-bottom:2px;}
+.ro .rn{font-size:.68rem;font-weight:600;color:var(--text2);}
+.ro.sel .rn{color:var(--teal);}
+.ro.sel-rose .rn{color:var(--rose);}
+.btn-login{width:100%;padding:11px;background:linear-gradient(135deg,var(--teal),var(--teal2));color:#fff;border:none;border-radius:var(--r-sm);font-size:.88rem;font-weight:700;box-shadow:0 4px 14px rgba(11,122,117,.32);transition:all .2s;margin-top:5px;}
+.btn-login:hover{transform:translateY(-1px);}
+
+/* Demo cards panel */
+.demo-panel{flex:1;display:flex;flex-direction:column;gap:12px;}
+.demo-section-title{font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.45);margin-bottom:4px;padding-left:2px;}
+.demo-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:var(--r-lg);padding:14px 16px;cursor:pointer;transition:all .2s;}
+.demo-card:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2);transform:translateX(3px);}
+.demo-card.staff{border-left:3px solid var(--teal2);}
+.demo-card.staff:hover{border-color:var(--teal2);}
+.demo-card.manager{border-left:3px solid var(--sky);}
+.demo-card.manager:hover{border-color:var(--sky);}
+.demo-card.family{border-left:3px solid #fb7185;}
+.demo-card.family:hover{border-color:#fb7185;}
+.dc-top{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+.dc-av{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:700;color:#fff;flex-shrink:0;}
+.dc-av.teal{background:linear-gradient(135deg,var(--teal),var(--teal2));}
+.dc-av.blue{background:linear-gradient(135deg,var(--sky),#60A5FA);}
+.dc-av.rose{background:linear-gradient(135deg,var(--rose),#fb7185);}
+.dc-av.purple{background:linear-gradient(135deg,var(--purple),#A78BFA);}
+.dc-name{font-size:.86rem;font-weight:700;color:#fff;}
+.dc-role{font-size:.69rem;color:rgba(255,255,255,.48);}
+.dc-access{font-size:.74rem;color:rgba(255,255,255,.55);line-height:1.5;}
+.dc-arrow{margin-left:auto;color:rgba(255,255,255,.3);font-size:.85rem;flex-shrink:0;}
+
+/* ── MODAL ── */
+.mo{position:fixed;inset:0;background:rgba(13,33,55,.5);backdrop-filter:blur(4px);z-index:300;display:none;align-items:center;justify-content:center;}
+.mo.open{display:flex;}
+.mc{background:var(--surface);border-radius:var(--r-xl);padding:26px;width:440px;max-width:90vw;box-shadow:var(--sh-lg);animation:fi .2s ease;}
+.mt-{font-size:1rem;font-weight:700;color:var(--navy);margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;}
+.mx{background:none;border:none;font-size:1.1rem;color:var(--gray2);cursor:pointer;}
+.mf{display:flex;gap:7px;justify-content:flex-end;margin-top:18px;}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:20px;right:20px;z-index:500;display:flex;flex-direction:column;gap:6px;pointer-events:none;}
+.ti{background:var(--navy);color:#fff;padding:10px 15px;border-radius:var(--r-md);font-size:.81rem;font-weight:500;box-shadow:var(--sh-lg);display:flex;align-items:center;gap:8px;animation:fi .25s ease;pointer-events:auto;}
+.ti::before{content:'✓';background:var(--green);width:17px;height:17px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:900;color:#fff;flex-shrink:0;}
+
+/* ── RESTRICTED NOTICE ── */
+.restricted-notice{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;text-align:center;}
+.rn-icon{font-size:3rem;margin-bottom:16px;}
+.rn-title{font-size:1.1rem;font-weight:700;color:var(--navy);margin-bottom:8px;}
+.rn-sub{font-size:.88rem;color:var(--gray1);max-width:300px;line-height:1.6;}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:5px;height:5px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--gray3);border-radius:3px;}::-webkit-scrollbar-thumb:hover{background:var(--gray2);}
+</style>
+</head>
+<body>
+
+<!-- ══════════ LOGIN ══════════ -->
+<div id="login-screen">
+  <div class="login-bg"></div>
+  <div class="login-wrap">
+
+    <!-- Left: login form -->
+    <div class="lc">
+      <div class="ll">
+        <div class="ll-ic">💊</div>
+        <div class="lb">Care<span>Tech</span></div>
+        <div class="lt2">Medicine Management & Dispenser</div>
+      </div>
+      <div class="fg"><label class="fl">Email Address</label><input class="fi" type="email" placeholder="your@email.com" id="lEmail"/></div>
+      <div class="fg"><label class="fl">Password</label><input class="fi" type="password" placeholder="••••••••" id="lPass"/></div>
+      <div class="fg">
+        <label class="fl">Sign in as</label>
+        <div class="role-sel">
+          <div class="ro sel" id="ro-nurse" onclick="selRole(this,'Nurse / Caregiver','staff')"><span class="re">👩‍⚕️</span><div class="rn">Nurse</div></div>
+          <div class="ro" id="ro-manager" onclick="selRole(this,'Facility Manager','staff')"><span class="re">🏥</span><div class="rn">Manager</div></div>
+          <div class="ro" id="ro-family" onclick="selRole(this,'Family Member','family')"><span class="re">👨‍👩‍👧</span><div class="rn">Family</div></div>
+        </div>
+      </div>
+      <button class="btn-login" id="loginBtn" onclick="doLogin()">Sign In →</button>
+      <div style="margin-top:14px;padding-top:13px;border-top:1px solid var(--border);font-size:.72rem;color:var(--gray1);text-align:center;">
+        Or use a quick demo account on the right →
+      </div>
+    </div>
+
+    <!-- Right: demo accounts panel -->
+    <div class="demo-panel">
+      <div class="demo-section-title">Staff Accounts</div>
+
+      <div class="demo-card staff" onclick="quickLogin('nurse.sarah@caretech.com.au','Nurse / Caregiver','staff','Sarah Mitchell','SM')">
+        <div class="dc-top">
+          <div class="dc-av teal">SM</div>
+          <div><div class="dc-name">Sarah Mitchell</div><div class="dc-role">Ward B Nurse</div></div>
+          <span class="dc-arrow">→</span>
+        </div>
+        <div class="dc-access">✓ All residents &nbsp;·&nbsp; Full schedule &nbsp;·&nbsp; Alerts &nbsp;·&nbsp; Slot config &nbsp;·&nbsp; History</div>
+      </div>
+
+      <div class="demo-card manager" onclick="quickLogin('j.park@caretech.com.au','Facility Manager','staff','Dr. James Park','JP')">
+        <div class="dc-top">
+          <div class="dc-av blue">JP</div>
+          <div><div class="dc-name">Dr. James Park</div><div class="dc-role">Facility Manager</div></div>
+          <span class="dc-arrow">→</span>
+        </div>
+        <div class="dc-access">✓ Full access &nbsp;·&nbsp; Reports &nbsp;·&nbsp; All residents &nbsp;·&nbsp; Admin settings</div>
+      </div>
+
+      <div class="demo-section-title" style="margin-top:8px;">Family Member Accounts</div>
+
+      <div class="demo-card family" onclick="quickLogin('mary.wilson@email.com','Family Member','family','Mary Wilson','MW')">
+        <div class="dc-top">
+          <div class="dc-av rose">MW</div>
+          <div><div class="dc-name">Mary Wilson</div><div class="dc-role">Family of Margaret Wilson</div></div>
+          <span class="dc-arrow">→</span>
+        </div>
+        <div class="dc-access">🔒 Restricted to Margaret Wilson only &nbsp;·&nbsp; View doses &amp; alerts</div>
+      </div>
+
+      <div class="demo-card family" onclick="quickLogin('robert.andrews@email.com','Family Member','family','Robert Andrews','RA')">
+        <div class="dc-top">
+          <div class="dc-av purple">RA</div>
+          <div><div class="dc-name">Robert Andrews</div><div class="dc-role">Family of Thomas Andrews</div></div>
+          <span class="dc-arrow">→</span>
+        </div>
+        <div class="dc-access">🔒 Restricted to Thomas Andrews only &nbsp;·&nbsp; View doses &amp; alerts</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ APP SHELL ══════════ -->
+<div id="app" style="display:none;">
+  <nav id="sidebar">
+    <div class="sb-logo">
+      <div class="sb-logo-row">
+        <div class="sb-ic" id="sbIcon">💊</div>
+        <div>
+          <div class="sb-name">CareTech</div>
+          <div class="sb-sub" id="sbSub">Medicine Management</div>
+        </div>
+      </div>
+      <div class="family-badge" id="familyBadge" style="display:none;">👨‍👩‍👧 Family View</div>
+    </div>
+    <div class="sb-nav" id="sidebarNav">
+      <!-- populated by JS based on role -->
+    </div>
+    <div class="sb-user" onclick="showSettingsOrLogout()">
+      <div class="ua" id="uaSmall">SM</div>
+      <div style="flex:1;min-width:0;"><div class="un" id="sbName">Sarah Mitchell</div><div class="ur" id="sbRole">Nurse</div></div>
+      <span style="color:rgba(255,255,255,.25);font-size:.7rem;">⋯</span>
+    </div>
+  </nav>
+
+  <div id="main">
+    <div id="topbar">
+      <div class="tb-l">
+        <div><div class="pt" id="pTitle">Dashboard</div><div class="ps" id="pSub">Monday, 4 May 2026</div></div>
+      </div>
+      <div class="tb-r">
+        <button class="tbtn primary" id="tbAct" style="display:none;" onclick="tbAction()">+ Add</button>
+        <button class="nb" id="notifBtn" onclick="navTo('alerts')">🔔<span class="nd" id="notifDot"></span></button>
+      </div>
+    </div>
+    <div id="content">
+
+      <!-- ════ FAMILY DASHBOARD ════ -->
+      <div class="screen" id="s-family-dashboard">
+        <div class="family-hero">
+          <div class="fh-avatar" id="fhAvatar">MW</div>
+          <div class="fh-info">
+            <div class="fh-name" id="fhResName">Margaret Wilson</div>
+            <div class="fh-meta" id="fhResMeta">Room 12B · Ward B · Age 78 · Dr. Chen</div>
+            <div class="fh-status"><span class="fh-dot"></span><span id="fhStatusText">On Schedule Today</span></div>
+          </div>
+          <div class="fh-stats">
+            <div class="fh-stat"><div class="fh-stat-val" id="fhTotalDoses">4</div><div class="fh-stat-lbl">Doses Today</div></div>
+            <div class="fh-stat"><div class="fh-stat-val" id="fhDone">2</div><div class="fh-stat-lbl">Completed</div></div>
+            <div class="fh-stat"><div class="fh-stat-val" id="fhCompliance">97%</div><div class="fh-stat-lbl">Compliance</div></div>
+          </div>
+        </div>
+
+        <div class="fam-grid">
+          <div style="display:flex;flex-direction:column;gap:14px;">
+
+            <!-- Next dose card -->
+            <div class="next-dose-card">
+              <div class="ndc-label">Next Scheduled Dose</div>
+              <div class="ndc-time" id="ndcTime">12:00 PM</div>
+              <div class="ndc-med" id="ndcMed">Metformin 500mg</div>
+              <div class="ndc-slot" id="ndcSlot">Slot 1 · Dispenser Unit 1</div>
+              <div class="ndc-countdown" id="ndcCountdown">⏱ In about 2 hours</div>
+            </div>
+
+            <!-- Today's dose timeline -->
+            <div class="card">
+              <div class="ch"><span class="ct">Today's Medication Timeline</span></div>
+              <div class="today-timeline" id="famTimeline"></div>
+            </div>
+
+            <!-- Recent history -->
+            <div class="card">
+              <div class="ch"><span class="ct">Recent Dispensing History</span><button class="ca" onclick="navTo('fam-history')">View all →</button></div>
+              <div class="fam-hist-list" id="famHistList"></div>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:14px;">
+
+            <!-- Compliance ring -->
+            <div class="card">
+              <div class="ch"><span class="ct">Weekly Compliance</span></div>
+              <div class="compliance-ring-wrap">
+                <svg class="ring-svg" viewBox="0 0 110 110">
+                  <circle cx="55" cy="55" r="42" fill="none" stroke="#E2E8F2" stroke-width="10"/>
+                  <circle id="compRing" cx="55" cy="55" r="42" fill="none" stroke="url(#rg)" stroke-width="10" stroke-linecap="round" stroke-dasharray="263.9" stroke-dashoffset="26" transform="rotate(-90 55 55)"/>
+                  <defs><linearGradient id="rg" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#0B7A75"/><stop offset="100%" stop-color="#0EA5A0"/></linearGradient></defs>
+                  <text class="ring-val" x="55" y="50" id="compPct" style="font-family:var(--font);font-size:16px;font-weight:800;fill:#0D2137;text-anchor:middle;dominant-baseline:central;">97%</text>
+                  <text class="ring-lbl" x="55" y="66" style="font-family:var(--font);font-size:9px;fill:#64748B;text-anchor:middle;">compliance</text>
+                </svg>
+              </div>
+              <div style="display:flex;justify-content:space-between;margin-top:12px;font-size:.76rem;color:var(--gray1);">
+                <span>✓ <strong style="color:var(--green);">27</strong> on time</span>
+                <span>⚠ <strong style="color:var(--amber);">1</strong> late</span>
+                <span>✗ <strong style="color:var(--red);">0</strong> missed</span>
+              </div>
+            </div>
+
+            <!-- Notifications for family -->
+            <div class="card">
+              <div class="ch"><span class="ct">Notifications</span></div>
+              <div class="notif-list" id="famNotifList"></div>
+            </div>
+
+            <!-- Dispenser mini status -->
+            <div class="disp-status-mini">
+              <div class="dsm-title">Dispenser Status</div>
+              <div class="dsm-row"><span class="dsm-l">Device</span><span class="dsm-v"><span class="dot-on"></span>Online</span></div>
+              <div class="dsm-row"><span class="dsm-l">Slot 1 — Metformin</span><span class="dsm-v" id="famSlotCount">12 doses left</span></div>
+              <div class="dsm-row"><span class="dsm-l">Last sync</span><span class="dsm-v">2 min ago</span></div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ════ FAMILY HISTORY ════ -->
+      <div class="screen" id="s-fam-history">
+        <div class="card" style="margin-bottom:14px;background:linear-gradient(135deg,var(--rose-lt),#fff4f6);border-color:#fecdd3;">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="font-size:1.4rem;">👁️</div>
+            <div><div style="font-size:.88rem;font-weight:700;color:var(--navy);" id="famHistHeader">Margaret Wilson — Dispensing History</div><div style="font-size:.76rem;color:var(--gray1);margin-top:2px;">You can only see history for your family member.</div></div>
+          </div>
+        </div>
+        <div class="fchips">
+          <button class="fc active" onclick="filtH(this)">All</button>
+          <button class="fc" onclick="filtH(this)">✓ Dispensed</button>
+          <button class="fc" onclick="filtH(this)">✗ Missed</button>
+        </div>
+        <div class="card" style="padding:0;overflow:hidden;">
+          <table class="lt">
+            <thead><tr><th>Date & Time</th><th>Medication</th><th>Slot</th><th>Status</th></tr></thead>
+            <tbody id="famHistTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ════ FAMILY ALERTS ════ -->
+      <div class="screen" id="s-fam-alerts">
+        <div class="card" style="margin-bottom:14px;background:linear-gradient(135deg,var(--rose-lt),#fff4f6);border-color:#fecdd3;">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="font-size:1.4rem;">🔒</div>
+            <div><div style="font-size:.88rem;font-weight:700;color:var(--navy);">Your Alerts</div><div style="font-size:.76rem;color:var(--gray1);margin-top:2px;">Alerts about your family member only.</div></div>
+          </div>
+        </div>
+        <div class="alert-cards" id="famAlertCards"></div>
+      </div>
+
+      <!-- ════ STAFF DASHBOARD ════ -->
+      <div class="screen active" id="s-dashboard">
+        <div class="stats-row">
+          <div class="sc teal"><div class="si">👥</div><div class="sv">48</div><div class="sl">Active Residents</div><div class="sd up">↑ 2 this week</div></div>
+          <div class="sc blue"><div class="si">💊</div><div class="sv">142</div><div class="sl">Doses Today</div><div class="sd up">↑ 98.6% on time</div></div>
+          <div class="sc amber"><div class="si">⚠️</div><div class="sv">3</div><div class="sl">Missed Doses</div><div class="sd dn">↑ 1 from yesterday</div></div>
+          <div class="sc green"><div class="si">📡</div><div class="sv">Online</div><div class="sl">Dispenser Status</div><div class="sd up">All 6 slots active</div></div>
+        </div>
+        <div class="dg">
+          <div class="card">
+            <div class="ch"><span class="ct">Today's Medication Schedule</span><button class="ca" onclick="navTo('schedule')">View full →</button></div>
+            <div class="dose-list" id="dashDoses"></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:13px;">
+            <div class="card">
+              <div class="ch"><span class="ct">Active Alerts</span><button class="ca" onclick="navTo('alerts')">View all →</button></div>
+              <div class="al-list">
+                <div class="al-item crit"><span>🚨</span><div><div class="al-msg">Missed — Dorothy Evans · Warfarin 2mg</div><div class="al-time">Slot 5 · 14 min ago</div></div></div>
+                <div class="al-item warn"><span>⚠️</span><div><div class="al-msg">Low stock — Slot 3 · Metformin</div><div class="al-time">2 doses remaining</div></div></div>
+                <div class="al-item info"><span>ℹ️</span><div><div class="al-msg">Unit 4 reconnected</div><div class="al-time">32 min ago</div></div></div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="ch"><span class="ct">Dispenser Unit 1</span><button class="ca" onclick="navTo('slots')">Configure →</button></div>
+              <div class="dv-row"><span class="dv-l">Status</span><span class="dv-v"><span class="dot-sm on"></span>Online</span></div>
+              <div class="dv-row"><span class="dv-l">Active slots</span><span class="dv-v" style="color:var(--teal)">5 / 6 configured</span></div>
+              <div class="dv-row"><span class="dv-l">Battery backup</span><span class="dv-v">🔋 87%</span></div>
+              <div class="dv-row"><span class="dv-l">Next dose</span><span class="dv-v" style="color:var(--teal)">12:00 — Metformin</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════ SLOT CONFIG ════ -->
+      <div class="screen" id="s-slots">
+        <div class="slot-layout">
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <div class="dispenser-visual">
+              <div class="dv-title">Dispenser Unit 1 — Slot Overview</div>
+              <div class="disp-body"><div class="slot-grid" id="slotGrid"></div></div>
+              <div style="margin-top:12px;font-size:.7rem;color:rgba(255,255,255,.35);">CareTech MD-1 · Serial: CT-2026-001</div>
+            </div>
+            <div class="card">
+              <div class="ch"><span class="ct">All Slots</span><span style="font-size:.73rem;color:var(--gray1);" id="slotSummary"></span></div>
+              <div id="slotList"></div>
+            </div>
+          </div>
+          <div>
+            <div class="card">
+              <div class="ch"><span class="ct" id="editSlotTitle">Select a Slot</span></div>
+              <div id="slotEditPanel"><div style="text-align:center;padding:36px 16px;color:var(--gray2);"><div style="font-size:1.8rem;margin-bottom:10px;">🗂️</div><div style="font-size:.85rem;">Click any slot to configure it</div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════ SCHEDULE ════ -->
+      <div class="screen" id="s-schedule">
+        <div class="sched-layout">
+          <div class="card">
+            <div class="ch"><span class="ct">Week of 4–10 May 2026</span><div style="display:flex;gap:6px;"><button class="tbtn">← Prev</button><button class="tbtn">Today</button><button class="tbtn">Next →</button></div></div>
+            <div class="wk-hdr"><div></div><div class="wkl">Mon<br/><strong style="color:var(--teal)">4</strong></div><div class="wkl">Tue<br/><strong>5</strong></div><div class="wkl">Wed<br/><strong>6</strong></div><div class="wkl">Thu<br/><strong>7</strong></div><div class="wkl">Fri<br/><strong>8</strong></div><div class="wkl">Sat<br/><strong>9</strong></div><div class="wkl">Sun<br/><strong>10</strong></div></div>
+            <div id="schedBody"></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:13px;">
+            <div class="card">
+              <div class="ch"><span class="ct">Add New Dose</span></div>
+              <div class="add-sched-form">
+                <div class="fg"><label class="fl">Resident</label><select class="fsel"><option>Select…</option><option>Margaret Wilson</option><option>Thomas Andrews</option><option>Dorothy Evans</option><option>Robert Chen</option><option>Patricia Moore</option></select></div>
+                <div class="fg"><label class="fl">Slot & Medication</label><select class="fsel" id="schedSlot"></select></div>
+                <div class="fr"><div class="fg"><label class="fl">Time</label><input class="fi" type="time" value="08:00"/></div><div class="fg"><label class="fl">Repeat</label><select class="fsel"><option>Daily</option><option>Every 2 days</option><option>Weekdays</option></select></div></div>
+                <button class="btn-save-slot" onclick="showToast('Schedule saved')">Save Schedule</button>
+              </div>
+            </div>
+            <div class="card"><div class="ch"><span class="ct">Next 3 Doses</span></div><div class="upcoming-list" id="upcomingList"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════ RESIDENTS ════ -->
+      <div class="screen" id="s-residents">
+        <div class="res-toolbar">
+          <div class="sw"><span class="sw-ic">🔍</span><input class="sb-inp" type="text" placeholder="Search residents…" oninput="filterRes(this.value)"/></div>
+          <button class="fb">🏥 All Wards</button>
+          <button class="tbtn primary" onclick="openModal()">+ Add Resident</button>
+        </div>
+        <div class="res-grid" id="resGrid"></div>
+      </div>
+
+      <!-- ════ HISTORY ════ -->
+      <div class="screen" id="s-history">
+        <div class="exp-bar"><div style="font-size:.82rem;color:var(--text2);">Showing <strong style="color:var(--navy)">247 events</strong></div><div style="display:flex;gap:6px;"><button class="tbtn" onclick="showToast('Exporting CSV…')">📥 CSV</button><button class="tbtn" onclick="showToast('Generating PDF…')">📄 PDF</button></div></div>
+        <div class="fchips"><button class="fc active" onclick="filtH(this)">All Events</button><button class="fc" onclick="filtH(this)">✓ Dispensed</button><button class="fc" onclick="filtH(this)">✗ Missed</button><button class="fc" onclick="filtH(this)">✎ Override</button></div>
+        <div class="card" style="padding:0;overflow:hidden;"><table class="lt"><thead><tr><th>Timestamp</th><th>Resident</th><th>Slot</th><th>Medication</th><th>Dose</th><th>Event</th><th>By</th></tr></thead><tbody id="histBody"></tbody></table></div>
+      </div>
+
+      <!-- ════ ALERTS (STAFF) ════ -->
+      <div class="screen" id="s-alerts">
+        <div class="at"><button class="atb active" onclick="atTab(this)">All <span class="cnt">3</span></button><button class="atb" onclick="atTab(this)">Critical <span class="cnt">1</span></button><button class="atb" onclick="atTab(this)">Warnings <span class="cnt">1</span></button><button class="atb" onclick="atTab(this)">Info <span class="cnt">1</span></button></div>
+        <div class="alert-cards">
+          <div class="ac crit unread"><div class="ac-icon">🚨</div><div class="ac-body"><div class="ac-title">Missed Dose — Dorothy Evans</div><div class="ac-desc"><strong>Slot 5 · Warfarin 2mg</strong> dispensed at 09:00 but not collected within 15 minutes.</div><div class="ac-meta">🕐 Today 09:14 · Unit 1</div><div class="ac-acts"><button class="bsm p" onclick="showToast('Administered')">Mark Administered</button><button class="bsm" onclick="showToast('Reminder sent')">Send Reminder</button><button class="bsm d" onclick="showToast('Incident logged')">Log Incident</button></div></div><button class="ac-x" onclick="this.closest('.ac').remove();showToast('Dismissed')">×</button></div>
+          <div class="ac warn unread"><div class="ac-icon">⚠️</div><div class="ac-body"><div class="ac-title">Low Stock — Slot 3 · Metformin</div><div class="ac-desc">Only 2 doses remaining. Refill before tomorrow's 08:00 dose.</div><div class="ac-meta">🕐 Today 08:05</div><div class="ac-acts"><button class="bsm p" onclick="showToast('Order sent')">Order Refill</button><button class="bsm" onclick="showToast('Snoozed')">Snooze 8hrs</button></div></div><button class="ac-x" onclick="this.closest('.ac').remove();showToast('Dismissed')">×</button></div>
+          <div class="ac info"><div class="ac-icon">ℹ️</div><div class="ac-body"><div class="ac-title">Unit 4 Reconnected</div><div class="ac-desc">18 minutes offline. All doses dispensed from cache. Logs synced.</div><div class="ac-meta">🕐 Today 07:28</div><div class="ac-acts"><button class="bsm" onclick="navTo('history')">View Logs</button></div></div><button class="ac-x" onclick="this.closest('.ac').remove();showToast('Dismissed')">×</button></div>
+        </div>
+      </div>
+
+      <!-- ════ SETTINGS ════ -->
+      <div class="screen" id="s-settings">
+        <div class="set-layout">
+          <div class="card" style="padding:9px;height:fit-content;">
+            <div class="set-nav" id="settingsNav"></div>
+          </div>
+          <div>
+            <div class="ss active" id="ss-profile">
+              <div class="card">
+                <div class="ch"><span class="ct">My Profile</span></div>
+                <div style="display:flex;align-items:center;gap:13px;padding:14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-md);margin-bottom:18px;">
+                  <div style="width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--sky));display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:800;color:#fff;" id="profAv">SM</div>
+                  <div><div style="font-size:.92rem;font-weight:700;color:var(--navy);" id="profName">Sarah Mitchell</div><div style="font-size:.74rem;color:var(--gray1);" id="profRole">Nurse / Caregiver</div></div>
+                </div>
+                <div class="fr" style="margin-bottom:11px;"><div class="fg"><label class="fl">First Name</label><input class="fi" id="profFName" value="Sarah"/></div><div class="fg"><label class="fl">Last Name</label><input class="fi" id="profLName" value="Mitchell"/></div></div>
+                <div class="fg"><label class="fl">Email</label><input class="fi" id="profEmail" value="nurse.sarah@caretech.com.au"/></div>
+                <div style="display:flex;justify-content:flex-end;margin-top:12px;"><button class="tbtn primary" onclick="showToast('Profile saved')">Save Changes</button></div>
+              </div>
+            </div>
+            <div class="ss" id="ss-notif">
+              <div class="card">
+                <div class="ch"><span class="ct">Notifications</span></div>
+                <div style="margin-bottom:18px;"><div class="sg-title">Alert Types</div>
+                  <div class="sr"><div><div class="sn">Missed dose alerts</div><div class="sd2">Notify immediately</div></div><label class="toggle"><input type="checkbox" checked/><span class="ts2"></span></label></div>
+                  <div class="sr"><div><div class="sn">Low stock warnings</div><div class="sd2">Alert at ≤3 doses</div></div><label class="toggle"><input type="checkbox" checked/><span class="ts2"></span></label></div>
+                  <div class="sr"><div><div class="sn">Device connectivity</div><div class="sd2">Alert if offline &gt;5 min</div></div><label class="toggle"><input type="checkbox" checked/><span class="ts2"></span></label></div>
+                </div>
+                <div style="display:flex;justify-content:flex-end;"><button class="tbtn primary" onclick="showToast('Preferences saved')">Save</button></div>
+              </div>
+            </div>
+            <div class="ss" id="ss-security">
+              <div class="card">
+                <div class="ch"><span class="ct">Security</span></div>
+                <div class="fg"><label class="fl">Current Password</label><input class="fi" type="password" placeholder="••••••••"/></div>
+                <div class="fg"><label class="fl">New Password</label><input class="fi" type="password" placeholder="••••••••"/></div>
+                <div style="margin:14px 0;"><div class="sg-title">Sessions</div>
+                  <div class="sr"><div><div class="sn">Two-factor authentication</div></div><label class="toggle"><input type="checkbox"/><span class="ts2"></span></label></div>
+                  <div class="sr"><div><div class="sn">Auto-logout after 30 min</div></div><label class="toggle"><input type="checkbox" checked/><span class="ts2"></span></label></div>
+                </div>
+                <div style="display:flex;gap:7px;">
+                  <button class="tbtn primary" onclick="showToast('Password updated')">Update Password</button>
+                  <button class="tbtn" style="color:var(--red);border-color:var(--red);" onclick="logout()">Sign Out</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- end #content -->
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="mo" id="resModal">
+  <div class="mc">
+    <div class="mt-">Add New Resident <button class="mx" onclick="closeModal()">×</button></div>
+    <div class="fg"><label class="fl">Full Name</label><input class="fi" id="newResName" placeholder="e.g. Margaret Wilson"/></div>
+    <div class="fr"><div class="fg"><label class="fl">Date of Birth</label><input class="fi" type="date"/></div><div class="fg"><label class="fl">Ward</label><select class="fsel"><option>Ward A</option><option>Ward B</option><option>Ward C</option></select></div></div>
+    <div class="fg"><label class="fl">Primary Physician</label><input class="fi" placeholder="Dr. …"/></div>
+    <div class="mf"><button class="tbtn" onclick="closeModal()">Cancel</button><button class="tbtn primary" onclick="saveRes()">Add Resident</button></div>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════
+//  DATA
+// ══════════════════════════════════════════
+const SLOT_COLOURS = ['#0B7A75','#2E7CF6','#D97706','#7C3AED','#DC2626','#059669'];
+const slots = [
+  {id:1,med:'Metformin 500mg',resident:'Margaret Wilson',count:12,max:14,colour:'#0B7A75',notes:'Take with food'},
+  {id:2,med:'Lisinopril 10mg',resident:'Thomas Andrews',count:10,max:14,colour:'#2E7CF6',notes:'Monitor BP'},
+  {id:3,med:'Metformin 500mg',resident:'Robert Chen',count:2,max:14,colour:'#D97706',notes:'⚠ Low stock'},
+  {id:4,med:'Amlodipine 5mg',resident:'Patricia Moore',count:9,max:14,colour:'#7C3AED',notes:''},
+  {id:5,med:'Warfarin 2mg',resident:'Dorothy Evans',count:7,max:14,colour:'#DC2626',notes:'INR monitoring'},
+  {id:6,med:'',resident:'',count:0,max:14,colour:'#94A3B8',notes:''},
+];
+const residents = [
+  {name:'Margaret Wilson',id:'R-0041',ward:'Ward B',age:78,color:'#0B7A75',compliance:97},
+  {name:'Thomas Andrews',id:'R-0039',ward:'Ward A',age:82,color:'#2E7CF6',compliance:100},
+  {name:'Dorothy Evans',id:'R-0052',ward:'Ward B',age:75,color:'#7C3AED',compliance:89},
+  {name:'Robert Chen',id:'R-0033',ward:'Ward C',age:71,color:'#D97706',compliance:95},
+  {name:'Patricia Moore',id:'R-0047',ward:'Ward A',age:84,color:'#059669',compliance:98},
+  {name:'William Davis',id:'R-0029',ward:'Ward C',age:79,color:'#DC2626',compliance:92},
+];
+const histData = [
+  {ts:'04 May · 09:00',slot:5,ev:'missed',by:'System'},
+  {ts:'04 May · 08:32',slot:2,ev:'dispensed',by:'Auto'},
+  {ts:'04 May · 08:02',slot:1,ev:'dispensed',by:'Auto'},
+  {ts:'03 May · 20:00',slot:6,ev:'dispensed',by:'Auto'},
+  {ts:'03 May · 18:00',slot:4,ev:'override',by:'S. Mitchell'},
+  {ts:'03 May · 12:00',slot:3,ev:'dispensed',by:'Auto'},
+  {ts:'03 May · 09:00',slot:5,ev:'dispensed',by:'Auto'},
+  {ts:'02 May · 09:00',slot:2,ev:'missed',by:'System'},
+];
+const schedEvents=[
+  {slot:1,time:'08:00',days:[0,1,2,3,4],colCls:'c1'},
+  {slot:2,time:'09:00',days:[0,1,2,3,4,5,6],colCls:'c2'},
+  {slot:3,time:'12:00',days:[0,1,3,4],colCls:'c3'},
+  {slot:4,time:'18:00',days:[0,1,2,3,4],colCls:'c4'},
+  {slot:5,time:'09:00',days:[0,1,2,3,4,5,6],colCls:'c5'},
+];
+const times=['08:00','09:00','12:00','14:00','18:00','20:00'];
+
+// Family member → resident mapping
+const familyMap = {
+  'mary.wilson@email.com':    {resident:'Margaret Wilson', avatar:'MW', name:'Mary Wilson'},
+  'robert.andrews@email.com': {resident:'Thomas Andrews',  avatar:'RA', name:'Robert Andrews'},
+};
+
+// ══════════════════════════════════════════
+//  SESSION STATE
+// ══════════════════════════════════════════
+let currentUser = null; // {name, email, role, type:'staff'|'family', residentName}
+let selectedSlot = null, selectedColour = '#0B7A75';
+
+// ══════════════════════════════════════════
+//  NAV MENUS
+// ══════════════════════════════════════════
+const staffNav = [
+  {sec:'Main'},
+  {id:'dashboard',icon:'🏠',label:'Dashboard'},
+  {id:'residents',icon:'👥',label:'Residents'},
+  {id:'schedule',icon:'📅',label:'Schedule'},
+  {sec:'Dispenser'},
+  {id:'slots',icon:'🗂️',label:'Slot Configuration'},
+  {sec:'Monitoring'},
+  {id:'history',icon:'📋',label:'Dispense History'},
+  {id:'alerts',icon:'🔔',label:'Alerts',badge:3},
+  {sec:'System'},
+  {id:'settings',icon:'⚙️',label:'Settings'},
+];
+const familyNav = [
+  {sec:'My Family Member'},
+  {id:'family-dashboard',icon:'🏠',label:'Dashboard'},
+  {id:'fam-history',icon:'📋',label:'Dose History'},
+  {id:'fam-alerts',icon:'🔔',label:'My Alerts',badge:1},
+  {sec:'Account'},
+  {id:'settings',icon:'⚙️',label:'Settings'},
+];
+const settingsNavStaff = [
+  {id:'profile',icon:'👤',label:'My Profile'},
+  {id:'notif',icon:'🔔',label:'Notifications'},
+  {id:'security',icon:'🔒',label:'Security'},
+];
+const settingsNavFamily = [
+  {id:'profile',icon:'👤',label:'My Profile'},
+  {id:'notif',icon:'🔔',label:'Notifications'},
+  {id:'security',icon:'🔒',label:'Security'},
+];
+
+function buildNav(items, containerId, navFn){
+  const el = document.getElementById(containerId);
+  el.innerHTML = items.map(item => {
+    if(item.sec) return `<div class="sb-sec">${item.sec}</div>`;
+    return `<button class="ni" data-navid="${item.id}" onclick="${navFn}('${item.id}',this)">
+      <span class="ni-ic">${item.icon}</span>${item.label}
+      ${item.badge ? `<span class="ni-badge">${item.badge}</span>` : ''}
+    </button>`;
+  }).join('');
+}
+function buildSettingsNav(items){
+  const el = document.getElementById('settingsNav');
+  el.innerHTML = items.map(i=>
+    `<button class="sni ${i.id==='profile'?'active':''}" onclick="setSec('${i.id}',this)">${i.icon} ${i.label}</button>`
+  ).join('');
+}
+
+// ══════════════════════════════════════════
+//  LOGIN
+// ══════════════════════════════════════════
+let curRole='Nurse / Caregiver', curType='staff';
+function selRole(el, role, type){
+  document.querySelectorAll('.ro').forEach(o=>{o.classList.remove('sel','sel-rose');});
+  el.classList.add(type==='family' ? 'sel-rose' : 'sel');
+  curRole=role; curType=type;
+  document.getElementById('loginBtn').className = type==='family' ? 'btn-login' : 'btn-login';
+  document.getElementById('loginBtn').style.background = type==='family'
+    ? 'linear-gradient(135deg,#E11D48,#fb7185)'
+    : 'linear-gradient(135deg,var(--teal),var(--teal2))';
+}
+function quickLogin(email, role, type, name, initials){
+  document.getElementById('lEmail').value = email;
+  document.getElementById('lPass').value = 'demo';
+  curRole = role; curType = type;
+  document.querySelectorAll('.ro').forEach(o=>o.classList.remove('sel','sel-rose'));
+  const target = type==='family' ? 'ro-family' : (role.includes('Manager') ? 'ro-manager' : 'ro-nurse');
+  const el = document.getElementById(target);
+  if(el) el.classList.add(type==='family' ? 'sel-rose' : 'sel');
+  doLogin(email, role, type, name, initials);
+}
+function doLogin(email, role, type, name, initials){
+  const em    = email  || document.getElementById('lEmail').value;
+  const theType = type || curType;
+  const theRole = role || curRole;
+  if(!em){ showToast('Please enter your email'); return; }
+
+  let resolvedName = name, resolvedInitials = initials;
+  if(!resolvedName){
+    if(em.includes('manager'))    { resolvedName='Dr. James Park'; resolvedInitials='JP'; }
+    else if(familyMap[em])        { resolvedName=familyMap[em].name; resolvedInitials=familyMap[em].avatar; }
+    else                          { resolvedName='Sarah Mitchell'; resolvedInitials='SM'; }
+  }
+
+  const fmInfo = familyMap[em] || null;
+  currentUser = {
+    name: resolvedName,
+    initials: resolvedInitials,
+    email: em,
+    role: theRole,
+    type: theType,
+    residentName: fmInfo ? fmInfo.resident : null,
+    residentAvatar: fmInfo ? fmInfo.avatar : null,
+  };
+
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').style.display='flex';
+
+  // Style sidebar
+  const sb = document.getElementById('sidebar');
+  sb.classList.toggle('family-mode', theType==='family');
+  document.getElementById('sbIcon').textContent = theType==='family' ? '💊' : '💊';
+  document.getElementById('familyBadge').style.display = theType==='family' ? 'flex' : 'none';
+
+  // User info
+  document.getElementById('uaSmall').textContent  = resolvedInitials;
+  document.getElementById('uaSmall').className    = theType==='family' ? 'ua family' : 'ua';
+  document.getElementById('sbName').textContent   = resolvedName;
+  document.getElementById('sbRole').textContent   = theRole;
+  document.getElementById('profAv').textContent   = resolvedInitials;
+  document.getElementById('profName').textContent = resolvedName;
+  document.getElementById('profRole').textContent = theRole;
+  document.getElementById('profFName').value = resolvedName.split(' ')[0];
+  document.getElementById('profLName').value = resolvedName.split(' ').slice(1).join(' ');
+  document.getElementById('profEmail').value = em;
+
+  // Build navigation
+  if(theType==='family'){
+    buildNav(familyNav,'sidebarNav','navTo');
+    buildSettingsNav(settingsNavFamily);
+    setupFamilyDashboard();
+    navTo('family-dashboard', document.querySelector('[data-navid="family-dashboard"]'));
+  } else {
+    buildNav(staffNav,'sidebarNav','navTo');
+    buildSettingsNav(settingsNavStaff);
+    renderDashDoses();
+    navTo('dashboard', document.querySelector('[data-navid="dashboard"]'));
+  }
+  showToast('Welcome back, '+resolvedName.split(' ')[0]+'!');
+}
+
+// ══════════════════════════════════════════
+//  FAMILY DASHBOARD SETUP
+// ══════════════════════════════════════════
+function setupFamilyDashboard(){
+  const u = currentUser;
+  if(!u || u.type!=='family') return;
+  const rName = u.residentName;
+  const res   = residents.find(r=>r.name===rName);
+  const mySlots = slots.filter(s=>s.resident===rName);
+  const primarySlot = mySlots[0];
+
+  // Hero
+  document.getElementById('fhAvatar').textContent = rName.split(' ').map(p=>p[0]).join('');
+  document.getElementById('fhResName').textContent = rName;
+  document.getElementById('fhResMeta').textContent = `Room 12B · Ward B · Age ${res?res.age:''} · Dr. Chen`;
+  document.getElementById('fhCompliance').textContent = (res?res.compliance:97)+'%';
+
+  // Compliance ring
+  const pct = res?res.compliance:97;
+  const offset = 263.9 * (1-pct/100);
+  document.getElementById('compRing').setAttribute('stroke-dashoffset', offset);
+  document.getElementById('compPct').textContent = pct+'%';
+
+  // Next dose card
+  if(primarySlot){
+    document.getElementById('ndcMed').textContent  = primarySlot.med;
+    document.getElementById('ndcSlot').textContent = `Slot ${primarySlot.id} · Dispenser Unit 1`;
+    document.getElementById('famSlotCount').textContent = primarySlot.count+' doses left';
+  }
+
+  // Timeline
+  const today = [
+    {time:'08:00',status:'done'},
+    {time:'12:00',status:'pending'},
+    {time:'18:00',status:'upcoming'},
+    {time:'21:00',status:'upcoming'},
+  ];
+  const doneCount = today.filter(t=>t.status==='done').length;
+  document.getElementById('fhDone').textContent = doneCount;
+  document.getElementById('fhTotalDoses').textContent = today.length;
+  const statLbl = {done:'✓ Dispensed',pending:'⏳ Pending',upcoming:'↑ Upcoming',missed:'✗ Missed'};
+  document.getElementById('famTimeline').innerHTML = today.map(d=>`
+    <div class="tl-item">
+      <div class="tl-time">${d.time}</div>
+      <div class="tl-info">
+        <div class="tl-med">${primarySlot?primarySlot.med:'—'}</div>
+        <div class="tl-slot">${primarySlot?'Slot '+primarySlot.id+' · 1 tablet':'—'}</div>
+      </div>
+      <span class="badge ${d.status}">${statLbl[d.status]}</span>
+    </div>`).join('');
+
+  // Recent history (family — only their resident)
+  const myHist = histData.filter(h=>{ const s=slots.find(x=>x.id===h.slot); return s&&s.resident===rName; });
+  const evBadge={dispensed:'<span class="badge done">✓ Dispensed</span>',missed:'<span class="badge missed">✗ Missed</span>',override:'<span class="badge override">✎ Override</span>'};
+  document.getElementById('famHistList').innerHTML = myHist.slice(0,4).map(h=>{
+    const s=slots.find(x=>x.id===h.slot);
+    return `<div class="fhi"><div class="fhi-dot" style="background:${s?s.colour:'#94A3B8'}"></div><div class="fhi-time">${h.ts}</div><div class="fhi-med">${s&&s.med?s.med:'—'}</div>${evBadge[h.ev]}</div>`;
+  }).join('');
+
+  // History table
+  document.getElementById('famHistHeader').textContent = rName+' — Dispensing History';
+  document.getElementById('famHistTableBody').innerHTML = myHist.map(h=>{
+    const s=slots.find(x=>x.id===h.slot);
+    return `<tr><td>${h.ts}</td><td>${s&&s.med?s.med:'—'}</td><td><span class="slot-tag"><span class="slot-dot" style="background:${s?s.colour:'#aaa'}"></span>Slot ${h.slot}</span></td><td>${evBadge[h.ev]}</td></tr>`;
+  }).join('');
+
+  // Notifications
+  document.getElementById('famNotifList').innerHTML = `
+    <div class="notif-item ok"><span>✅</span><div><div class="notif-msg">08:00 dose dispensed on time</div><div class="notif-time">Today at 08:02</div></div></div>
+    <div class="notif-item warn"><span>⚠️</span><div><div class="notif-msg">Slot 1 stock is low — 12 doses left</div><div class="notif-time">Today at 07:00</div></div></div>
+    <div class="notif-item ok"><span>✅</span><div><div class="notif-msg">All doses completed yesterday</div><div class="notif-time">Yesterday at 21:03</div></div></div>`;
+
+  // Family alerts
+  document.getElementById('famAlertCards').innerHTML = `
+    <div class="ac warn unread">
+      <div class="ac-icon">⚠️</div>
+      <div class="ac-body">
+        <div class="ac-title">Low Stock — ${primarySlot?primarySlot.med:'Medication'}</div>
+        <div class="ac-desc">${primarySlot?'Slot '+primarySlot.id+' ('+primarySlot.med+')':'Your family member\'s slot'} has ${primarySlot?primarySlot.count:''} doses remaining. Staff have been notified to refill.</div>
+        <div class="ac-meta">🕐 Today 07:00</div>
+      </div>
+      <button class="ac-x" onclick="this.closest('.ac').remove();showToast('Dismissed')">×</button>
+    </div>
+    <div class="ac info">
+      <div class="ac-icon">ℹ️</div>
+      <div class="ac-body">
+        <div class="ac-title">All Doses On Schedule Today</div>
+        <div class="ac-desc">${rName}'s medications are running on schedule. Next dose at 12:00 PM — ${primarySlot?primarySlot.med:''}.</div>
+        <div class="ac-meta">🕐 Today 08:02</div>
+      </div>
+    </div>`;
+
+  document.getElementById('notifDot').style.display='block';
+}
+
+// ══════════════════════════════════════════
+//  NAV
+// ══════════════════════════════════════════
+const pageMeta = {
+  'family-dashboard': {title:'My Family Member',sub:'Personal medication overview',act:'',fn:''},
+  'fam-history':      {title:'Dose History',sub:'Your family member only',act:'',fn:''},
+  'fam-alerts':       {title:'My Alerts',sub:'Alerts for your family member',act:'',fn:''},
+  'dashboard':  {title:'Dashboard',sub:'Monday, 4 May 2026',act:'+ Add Resident',fn:'openModal()'},
+  'slots':      {title:'Slot Configuration',sub:'Manage medicine slots',act:'',fn:''},
+  'schedule':   {title:'Medication Schedule',sub:'Week of 4–10 May 2026',act:'',fn:''},
+  'residents':  {title:'Residents',sub:'48 residents · 3 wards',act:'+ Add Resident',fn:'openModal()'},
+  'history':    {title:'Dispense History',sub:'Full audit log',act:'Export',fn:"showToast('Exporting…')"},
+  'alerts':     {title:'Alerts',sub:'3 unread alerts',act:'',fn:''},
+  'settings':   {title:'Settings',sub:'Account & device configuration',act:'',fn:''},
+};
+function navTo(id, el){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('s-'+id).classList.add('active');
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('active'));
+  if(el) el.classList.add('active');
+  else { const b=document.querySelector(`[data-navid="${id}"]`); if(b) b.classList.add('active'); }
+  const m = pageMeta[id]||{title:id,sub:'',act:'',fn:''};
+  document.getElementById('pTitle').textContent = m.title;
+  document.getElementById('pSub').textContent   = m.sub;
+  const b=document.getElementById('tbAct');
+  b.textContent=m.act; b.style.display=m.act?'':'none';
+  b.setAttribute('onclick',m.fn||'');
+  if(id==='slots'){renderSlotGrid();renderSlotList();}
+  if(id==='schedule'){renderSchedule();renderUpcoming();}
+  if(id==='residents'){renderResidents(residents);}
+  if(id==='history'){renderHistBody();}
+}
+function tbAction(){}
+function showSettingsOrLogout(){ navTo('settings', document.querySelector('[data-navid="settings"]')); }
+
+// ══════════════════════════════════════════
+//  SLOT CONFIG
+// ══════════════════════════════════════════
+function renderSlotGrid(){
+  document.getElementById('slotGrid').innerHTML = slots.map(s=>{
+    const filled=s.med!=='', low=filled&&s.count<=3;
+    const sel=selectedSlot===s.id?'selected':'';
+    const cls=!filled?'empty-sv':(low?'low-stock':'filled');
+    const pills=filled?Array.from({length:s.max},(_,i)=>`<div class="pd ${i<s.count?'full':'empty'}" style="${i<s.count?'background:'+s.colour:''}"></div>`).join(''):'';
+    return `<div class="sv ${cls} ${sel}" onclick="selectSlot(${s.id})">
+      ${low?'<span class="sv-badge"><span class="badge low">Low</span></span>':''}
+      <div class="sv-num">Slot ${s.id}</div>
+      ${filled?`<div class="sv-name" title="${s.med}">${s.med}</div><div class="sv-dose">${s.resident}</div><div class="sv-pills">${pills}</div><div class="sv-count">${s.count}/${s.max} doses</div>`
+              :`<div class="sv-empty-msg">Empty<br/>Tap to configure</div>`}
+    </div>`;
+  }).join('');
+}
+function renderSlotList(){
+  const cfg=slots.filter(s=>s.med).length;
+  document.getElementById('slotSummary').textContent=`${cfg} / ${slots.length} configured`;
+  document.getElementById('slotList').innerHTML = slots.map(s=>{
+    const filled=s.med!=='', low=filled&&s.count<=3;
+    const act=selectedSlot===s.id?'active':'';
+    const st=!filled?'<span class="badge empty">Empty</span>':(low?'<span class="badge low">Low</span>':'<span class="badge done">Active</span>');
+    return `<button class="slot-btn ${act}" onclick="selectSlot(${s.id})">
+      <div class="slot-btn-num" style="background:${act?s.colour:s.colour+'26'};color:${act?'#fff':s.colour}">${s.id}</div>
+      <div class="slot-btn-info"><div class="slot-btn-name">${filled?s.med:'Slot '+s.id+' — Empty'}</div><div class="slot-btn-sub">${filled?s.resident:'Not configured'}</div></div>
+      <div>${st}</div>
+    </button>`;
+  }).join('');
+}
+function selectSlot(id){
+  selectedSlot=id; renderSlotGrid(); renderSlotList();
+  const s=slots.find(x=>x.id===id);
+  selectedColour=s.colour||SLOT_COLOURS[0];
+  document.getElementById('editSlotTitle').textContent=`Configure Slot ${id}`;
+  const cols=SLOT_COLOURS.map(c=>`<div class="co ${c===selectedColour?'sel':''}" style="background:${c}" onclick="pickColour('${c}',this)"></div>`).join('');
+  document.getElementById('slotEditPanel').innerHTML=`
+    <div>
+      <div class="slot-edit-header">
+        <div class="slot-num-big" style="background:${s.colour||'#0B7A75'}" id="eSNB">${id}</div>
+        <div><div class="slot-edit-title">Slot ${id}</div><div class="slot-edit-sub" id="eStatus">${s.med?s.med+' · '+s.count+' doses':'Not configured'}</div></div>
+      </div>
+      <div class="fg"><label class="fl">Medicine Name</label><input class="fi" id="eMed" placeholder="e.g. Metformin 500mg" value="${s.med}" oninput="document.getElementById('eStatus').textContent=this.value||'Not configured'"/></div>
+      <div class="fg"><label class="fl">Assigned Resident</label>
+        <select class="fsel" id="eRes">
+          <option value="">Unassigned</option>
+          ${residents.map(r=>`<option ${s.resident===r.name?'selected':''}>${r.name}</option>`).join('')}
+        </select>
+      </div>
+      <div class="fg"><label class="fl">Current Pill Count</label>
+        <div class="pill-count-row">
+          <button class="cb" onclick="adjCount(-1)">−</button>
+          <div class="cv" id="cVal">${s.count}</div>
+          <button class="cb" onclick="adjCount(1)">+</button>
+          <span style="font-size:.73rem;color:var(--gray1);margin-left:4px;">/ ${s.max} max</span>
+        </div>
+      </div>
+      <div class="fg"><label class="fl">Slot Colour</label><div class="colour-row" id="colRow">${cols}</div></div>
+      <div class="fg"><label class="fl">Notes</label><input class="fi" id="eNotes" placeholder="e.g. Take with food" value="${s.notes}"/></div>
+      <button class="btn-save-slot" onclick="saveSlot()">💾 Save Slot ${id}</button>
+      ${s.med?`<button class="btn-clear-slot" onclick="clearSlot(${id})">Clear Slot ${id}</button>`:''}
+    </div>`;
+}
+function adjCount(d){const s=slots.find(x=>x.id===selectedSlot);s.count=Math.max(0,Math.min(s.max,s.count+d));document.getElementById('cVal').textContent=s.count;}
+function pickColour(c,el){selectedColour=c;document.querySelectorAll('.co').forEach(o=>o.classList.remove('sel'));el.classList.add('sel');const b=document.getElementById('eSNB');if(b)b.style.background=c;}
+function saveSlot(){
+  const s=slots.find(x=>x.id===selectedSlot);
+  s.med=document.getElementById('eMed').value;
+  s.resident=document.getElementById('eRes').value;
+  s.notes=document.getElementById('eNotes').value;
+  s.colour=selectedColour;
+  renderSlotGrid();renderSlotList();renderDashDoses();renderHistBody();renderUpcoming();
+  showToast('Slot '+selectedSlot+' saved — '+(s.med||'cleared'));
+  selectSlot(selectedSlot);
+}
+function clearSlot(id){
+  const s=slots.find(x=>x.id===id);
+  s.med='';s.resident='';s.notes='';s.count=0;s.colour='#94A3B8';
+  renderSlotGrid();renderSlotList();renderDashDoses();renderHistBody();
+  showToast('Slot '+id+' cleared');
+  selectSlot(id);
+}
+
+// ══════════════════════════════════════════
+//  SCHEDULE
+// ══════════════════════════════════════════
+function renderSchedule(){
+  document.getElementById('schedBody').innerHTML = times.map(t=>{
+    const cells=Array.from({length:7},(_,d)=>{
+      const ev=schedEvents.find(e=>e.time===t&&e.days.includes(d));
+      if(!ev) return '<div class="tc"></div>';
+      const s=slots.find(x=>x.id===ev.slot);
+      const med=s&&s.med?s.med:`Slot ${ev.slot}`;
+      const res=s&&s.resident?s.resident.split(' ').map(p=>p[0]).join('.'):'—';
+      return `<div class="tc"><div class="se ${ev.colCls}"><div class="se-n">${res}</div><div class="se-m">${med}</div><div class="se-s">S-${ev.slot}</div></div></div>`;
+    }).join('');
+    return `<div class="tr-row"><div class="tl-cell">${t}</div>${cells}</div>`;
+  }).join('');
+  // slot dropdown
+  const sel=document.getElementById('schedSlot');
+  if(sel) sel.innerHTML='<option value="">Select slot…</option>'+slots.filter(s=>s.med).map(s=>`<option>Slot ${s.id} — ${s.med} (${s.resident})</option>`).join('');
+}
+function renderUpcoming(){
+  const el=document.getElementById('upcomingList');
+  if(!el) return;
+  el.innerHTML=schedEvents.slice(0,3).map(e=>{
+    const s=slots.find(x=>x.id===e.slot);
+    return `<div class="ui"><div class="uit">${e.time}</div><div class="uii"><div class="uin">${s&&s.resident?s.resident:'—'}</div><div class="uim">${s&&s.med?s.med:`Slot ${e.slot}`}</div></div><div class="uis">S-${e.slot}</div></div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════
+//  DASHBOARD DOSES
+// ══════════════════════════════════════════
+const dashData=[{time:'08:00',slot:1,st:'done'},{time:'08:32',slot:2,st:'done'},{time:'09:00',slot:5,st:'missed'},{time:'12:00',slot:3,st:'pending'},{time:'18:00',slot:4,st:'upcoming'}];
+const stLbl={done:'✓ Dispensed',missed:'✗ Missed',pending:'⏳ Pending',upcoming:'↑ Upcoming'};
+function renderDashDoses(){
+  const el=document.getElementById('dashDoses');
+  if(!el) return;
+  el.innerHTML=dashData.map(d=>{
+    const s=slots.find(x=>x.id===d.slot);
+    return `<div class="di"><div class="di-time">${d.time}</div><div class="di-info"><div class="di-name">${s&&s.resident?s.resident:'—'}</div><div class="di-med">${s&&s.med?s.med:'—'}</div></div><div class="di-slot">S-${d.slot}</div><span class="badge ${d.st}">${stLbl[d.st]}</span></div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════
+//  RESIDENTS
+// ══════════════════════════════════════════
+function renderResidents(list){
+  const g=document.getElementById('resGrid');
+  if(!g) return;
+  g.innerHTML=list.map(r=>{
+    const rs=slots.filter(s=>s.resident===r.name);
+    const meds=rs.map(s=>`<span class="mt">${s.med}</span>`).join('')||'<span class="mt" style="opacity:.5">No meds</span>';
+    const nx=rs[0];
+    return `<div class="rc" onclick="showToast('Opening ${r.name}…')">
+      <div class="rc-hdr"><div class="rav" style="background:${r.color}">${r.name.split(' ').map(p=>p[0]).join('')}</div><div><div class="rn">${r.name}</div><div class="rid">${r.id} · Age ${r.age} · ${r.ward}</div></div></div>
+      <div class="med-tags">${meds}</div>
+      <div class="rc-ft"><div style="font-size:.72rem;color:var(--gray1);">Slot: <strong style="color:var(--navy)">${nx?'S-'+nx.id+' · '+nx.med:'—'}</strong></div><span style="font-size:.71rem;font-weight:700;color:${r.compliance>=95?'var(--green)':'var(--amber)'};">${r.compliance}%</span></div>
+      <div class="cbar"><div class="cf" style="width:${r.compliance}%"></div></div>
+    </div>`;
+  }).join('');
+}
+function filterRes(q){ renderResidents(residents.filter(r=>r.name.toLowerCase().includes(q.toLowerCase())||r.ward.toLowerCase().includes(q.toLowerCase()))); }
+
+// ══════════════════════════════════════════
+//  HISTORY
+// ══════════════════════════════════════════
+const evBadge={dispensed:'<span class="badge done">✓ Dispensed</span>',missed:'<span class="badge missed">✗ Missed</span>',override:'<span class="badge override">✎ Override</span>'};
+function renderHistBody(){
+  const el=document.getElementById('histBody');
+  if(!el) return;
+  el.innerHTML=histData.map(h=>{
+    const s=slots.find(x=>x.id===h.slot);
+    const med=s&&s.med?s.med:'—';
+    const res=s&&s.resident?s.resident:'—';
+    const dose=s&&s.med?(s.med.match(/\d+\s*mg/)?.[0]||'—'):'—';
+    return `<tr><td>${h.ts}</td><td>${res}</td><td><span class="slot-tag"><span class="slot-dot" style="background:${s?s.colour:'#aaa'}"></span>Slot ${h.slot}</span></td><td>${med}</td><td>${dose}</td><td>${evBadge[h.ev]}</td><td style="color:var(--gray1)">${h.by}</td></tr>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════
+//  MISC
+// ══════════════════════════════════════════
+function atTab(b){ document.querySelectorAll('.atb').forEach(t=>t.classList.remove('active')); b.classList.add('active'); }
+function setSec(id,btn){ document.querySelectorAll('.ss').forEach(s=>s.classList.remove('active')); document.getElementById('ss-'+id).classList.add('active'); document.querySelectorAll('.sni').forEach(n=>n.classList.remove('active')); btn.classList.add('active'); }
+function filtH(btn){ document.querySelectorAll('.fc').forEach(c=>c.classList.remove('active')); btn.classList.add('active'); showToast('Filtered: '+btn.textContent.trim()); }
+function openModal(){ document.getElementById('resModal').classList.add('open'); }
+function closeModal(){ document.getElementById('resModal').classList.remove('open'); }
+function saveRes(){ const n=document.getElementById('newResName').value||'New Resident'; showToast('"'+n+'" added'); closeModal(); }
+function showToast(msg){ const t=document.getElementById('toast'),el=document.createElement('div');el.className='ti';el.innerHTML='<span>'+msg+'</span>';t.appendChild(el);setTimeout(()=>{el.style.opacity='0';el.style.transform='translateX(20px)';el.style.transition='all .3s';setTimeout(()=>el.remove(),300);},3000); }
+function logout(){ currentUser=null; document.getElementById('app').style.display='none'; document.getElementById('login-screen').style.display='flex'; showToast('Signed out'); }
+document.addEventListener('keydown',e=>{ if(e.key==='Enter'&&document.getElementById('login-screen').style.display!=='none') doLogin(); });
+</script>
+</body>
+</html>
